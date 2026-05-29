@@ -117,6 +117,18 @@ h1.title-pause {
   color: #aac6e0;
 }
 
+.ctrl-group { margin-top: 18px; }
+.ctrl-group:first-child { margin-top: 0; }
+
+.ctrl-label {
+  font-size: clamp(10px, 1.05vw, 12px);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #ff3aa0;
+  text-shadow: 0 0 8px rgba(255, 58, 160, 0.55);
+  margin-bottom: 4px;
+}
+
 .controls .key {
   display: inline-block;
   padding: 2px 8px;

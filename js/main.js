@@ -131,6 +131,60 @@ const Game = (() => {
     }
   }
 
+  // --- HUD glyphs (Law 1: embody meaning as icons, not language-bound text) ---
+  function drawHeart(c, cx, topY, s) {
+    c.beginPath();
+    c.moveTo(cx, topY + s * 0.25);
+    c.bezierCurveTo(cx, topY, cx - s * 0.5, topY, cx - s * 0.5, topY + s * 0.25);
+    c.bezierCurveTo(cx - s * 0.5, topY + s * 0.55, cx, topY + s * 0.8, cx, topY + s);
+    c.bezierCurveTo(cx, topY + s * 0.8, cx + s * 0.5, topY + s * 0.55, cx + s * 0.5, topY + s * 0.25);
+    c.bezierCurveTo(cx + s * 0.5, topY, cx, topY, cx, topY + s * 0.25);
+    c.closePath();
+    c.fill();
+  }
+  function drawBomb(c, cx, cy, r) {
+    c.beginPath();
+    c.arc(cx, cy, r, 0, Math.PI * 2);
+    c.fill();
+    c.lineWidth = 1.2;
+    c.strokeStyle = c.fillStyle;
+    c.beginPath();
+    c.moveTo(cx + r * 0.5, cy - r * 0.7);
+    c.quadraticCurveTo(cx + r * 1.3, cy - r * 1.5, cx + r * 1.6, cy - r * 1.1);
+    c.stroke();
+  }
+  // Draws "icon ×n" right-anchored at rightX; returns the group's left edge x.
+  function drawCounter(c, rightX, n, color, iconFn) {
+    c.fillStyle = color; c.shadowColor = color; c.shadowBlur = 6;
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    c.font = 'bold 11px Consolas, monospace';
+    const label = '×' + n;
+    c.fillText(label, rightX, 10);
+    const cx = rightX - c.measureText(label).width - 7;
+    iconFn(c, cx);
+    return cx - 9;
+  }
+  // Skull at the end of the progress bar (Law 6: the bar now means "toward BYDO PRIME")
+  function drawBossMark(c, x, y, s, lit) {
+    c.save();
+    c.fillStyle = lit ? '#ff3a3a' : '#ff5aa0';
+    c.shadowColor = c.fillStyle; c.shadowBlur = lit ? 12 : 5;
+    c.beginPath();
+    c.arc(x, y - s * 0.1, s * 0.5, Math.PI, 0);
+    c.lineTo(x + s * 0.5, y + s * 0.18);
+    c.lineTo(x + s * 0.22, y + s * 0.18);
+    c.lineTo(x + s * 0.22, y + s * 0.45);
+    c.lineTo(x - s * 0.22, y + s * 0.45);
+    c.lineTo(x - s * 0.22, y + s * 0.18);
+    c.lineTo(x - s * 0.5, y + s * 0.18);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#04060c'; c.shadowBlur = 0;
+    c.beginPath(); c.arc(x - s * 0.2, y, s * 0.14, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(x + s * 0.2, y, s * 0.14, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+
   function drawHud() {
     const p = Player.state;
     ctx.save();
@@ -158,26 +212,24 @@ const Game = (() => {
       ctx.fillText(`x${mult}  COMBO ${p.combo}`, 150, 9);
     }
 
-    // Lives + bombs at right
-    ctx.textAlign = 'right';
-    ctx.font = 'bold 11px Consolas, monospace';
-    ctx.shadowColor = '#ff3aa0'; ctx.shadowBlur = 6;
-    ctx.fillStyle = '#ff3aa0';
+    // Lives + bombs at right — icon + count (no language-bound labels)
     let lives = Math.max(0, p.lives);
     if (lives > 90) lives = 0;
-    ctx.fillText('VIES ' + lives, W - 6, 9);
-    ctx.shadowColor = '#ffe45a';
-    ctx.fillStyle = '#ffe45a';
-    ctx.fillText('BOMBES ' + p.bombs, W - 80, 9);
+    const livesLeft = drawCounter(ctx, W - 6, lives, '#ff3aa0',
+      (c, cx) => drawHeart(c, cx, 4, 9));
+    drawCounter(ctx, livesLeft - 8, p.bombs, '#ffe45a',
+      (c, cx) => drawBomb(c, cx, 9, 4));
 
-    // Progress bar
+    // Progress bar — fill advances toward the boss marker at its end
     const prog = Math.min(1, Level1.getTime() / 176);
+    const barX = 280, barW = 196, barY = 6;
     ctx.shadowBlur = 0;
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillRect(280, 6, 200, 6);
+    ctx.fillRect(barX, barY, barW, 6);
     ctx.fillStyle = '#7af0ff';
     ctx.shadowColor = '#7af0ff'; ctx.shadowBlur = 6;
-    ctx.fillRect(280, 6, 200 * prog, 6);
+    ctx.fillRect(barX, barY, barW * prog, 6);
+    drawBossMark(ctx, barX + barW + 8, 9, 11, prog >= 0.985);
 
     // Pause overlay text
     if (state === STATE.PAUSE) {

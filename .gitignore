@@ -8,3 +8,6 @@ server.log
 
 # macOS
 .DS_Store
+
+# Playwright test output
+.playwright-mcp/
