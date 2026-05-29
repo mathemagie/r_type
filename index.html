@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>R-TYPELIKE — Neon Drift</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="800" height="450"></canvas>
+  <div id="scanlines"></div>
+
+  <div id="overlay" class="screen show">
+    <h1 class="title-main">R-TYPELIKE</h1>
+    <h2 class="title-sub">// NEON DRIFT</h2>
+    <p class="tagline">Le retour du Bydo. Une seule chance.</p>
+    <div class="controls">
+      <div><span class="key">&larr; &uarr; &darr; &rarr;</span> / <span class="key">WASD</span> Mouvement</div>
+      <div><span class="key">Z</span> Tir &middot; Maintenir pour charger le <b>BEAM</b></div>
+      <div><span class="key">SHIFT</span> Force Pod (lancer / rappeler)</div>
+      <div><span class="key">X</span> Smart Bomb (×2)</div>
+      <div><span class="key">P</span> Pause &middot; <span class="key">M</span> Mute</div>
+    </div>
+    <p class="start-prompt">[ APPUYEZ SUR <b>ENTRÉE</b> POUR DÉCOLLER ]</p>
+  </div>
+
+  <div id="gameover" class="screen">
+    <h1 class="title-over">SYSTÈME HORS LIGNE</h1>
+    <p id="final-score-over">Score : 0</p>
+    <p class="start-prompt">[ <b>R</b> pour réessayer ]</p>
+  </div>
+
+  <div id="win" class="screen">
+    <h1 class="title-win">MISSION ACCOMPLIE</h1>
+    <p class="tagline">Le commandement vous félicite, pilote.</p>
+    <p id="final-score-win">Score : 0</p>
+    <p id="final-rank">Rang : —</p>
+    <p class="start-prompt">[ <b>R</b> pour rejouer ]</p>
+  </div>
+
+  <div id="pause" class="screen">
+    <h1 class="title-pause">PAUSE</h1>
+    <p class="start-prompt">[ <b>P</b> pour reprendre ]</p>
+  </div>
+</div>
+
+<script src="js/fx.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/bullets.js"></script>
+<script src="js/background.js"></script>
+<script src="js/player.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/boss.js"></script>
+<script src="js/level1.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

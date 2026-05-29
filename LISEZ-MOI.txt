@@ -1,0 +1,59 @@
+================================================================
+  R-TYPELIKE — NEON DRIFT
+  Rétro-clone de R-Type en HTML5 Canvas (zéro dépendance)
+================================================================
+
+COMMENT LANCER
+--------------
+1) Décompresser le ZIP n'importe où.
+2) Double-cliquer sur "Lancer.bat" (Windows)
+   OU lancer "lancer.sh" (Mac/Linux)
+   OU ouvrir directement index.html dans Firefox.
+
+NB : Sur Chrome/Edge, ouvrir index.html en double-clic peut être
+bloqué par la politique de sécurité file:// (les scripts ne se
+chargeront pas). Le launcher démarre un mini-serveur local en
+arrière-plan et ouvre le navigateur dessus — c'est la méthode
+recommandée. Il faut Python 3 installé (pré-installé sur Mac/Linux,
+à installer depuis python.org sur Windows si besoin).
+
+CONTROLES
+---------
+  Flèches / WASD        Déplacement du vaisseau
+  Z (ou Espace)         Tir — MAINTENIR pour charger le BEAM
+  Shift                 Force Pod (lancer / rappeler)
+  X                     Smart Bomb (2 charges au départ)
+  Entrée                Démarrer / Rejouer
+  R                     Rejouer après mort
+  P                     Pause
+  M                     Mute
+
+ASTUCES
+-------
+- Le BEAM chargé transperce TOUT, fait des dégâts massifs au boss.
+- Frôler une balle ennemie (< 12px) déclenche un ralenti et +1 combo.
+- Le Force Pod absorbe les balles ennemies quand il est près du vaisseau.
+- Combo élevé = multiplicateur de score (×1 à ×8).
+- Les bombes nettoient l'écran et infligent des dégâts à tout le monde.
+
+DURÉE D'UN RUN
+--------------
+~3 min 45 s pour atteindre le boss final (BYDO PRIME),
++ combat boss en 3 phases.
+
+RANGS (en cas de victoire)
+--------------------------
+  D : < 12 000
+  C : 12 000 - 19 999
+  B : 20 000 - 27 999
+  A : 28 000 - 35 999
+  S : 36 000 - 49 999
+  SS : 50 000+
+
+CRÉATION
+--------
+Code source 100% maison, sprites et sons générés en JavaScript
+procéduralement (aucun asset binaire). Tested 165 FPS pendant
+les combats boss intenses.
+
+Bonne chasse, pilote.

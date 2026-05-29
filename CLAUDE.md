@@ -1,0 +1,75 @@
+# CLAUDE.md
+
+## Project
+
+**R-TYPELIKE — Neon Drift**: a retro R-Type-style horizontal shoot-'em-up built in
+**vanilla HTML5 Canvas + JavaScript with zero dependencies**. No build step, no npm,
+no bundler. All sprites and sound effects are generated procedurally in JS (no binary
+assets). UI text is in French.
+
+## Running locally
+
+The game must be served over HTTP (Chrome/Edge block `file://` script loading).
+
+```bash
+./lancer.sh          # macOS/Linux: starts `python3 -m http.server 8765` + opens browser
+# or directly:
+python3 -m http.server 8765   # then open http://localhost:8765
+```
+
+`Lancer.bat` is the Windows equivalent. There are no tests, no lint, and no build
+commands — edit a `.js` file and reload the browser.
+
+## Architecture
+
+`index.html` is the entry point. It defines the `<canvas id="game" width="800"
+height="450">` plus overlay screens (title / game over / win / pause), then loads each
+JS module via `<script>` tags **in dependency order** (`js/main.js` last).
+
+Each file in `js/` is an **IIFE module** assigned to a global (e.g.
+`const Game = (() => { ... return {...} })()`). Modules communicate through these
+globals — there is no module system. Load order in `index.html` matters; a module may
+reference globals defined by earlier scripts.
+
+Globals and their roles:
+
+| Global | File | Role |
+|---|---|---|
+| `FX` | `fx.js` | Screen shake, slow-motion `timescale`, pre/post draw passes |
+| `Particles` | `particles.js` | Particle pool + rendering |
+| `Audio` | `audio.js` | WebAudio music + `Audio.SFX.*` procedural sound effects |
+| `Input` | `input.js` | Keyboard state; `Input.wasPressed('start'\|'restart'\|'pause'\|'mute'…)`, `Input.endFrame()` |
+| `Bullets` | `bullets.js` | Player + enemy bullet pools, `Bullets.update(dt, Player.state)` |
+| `Background` | `background.js` | Parallax starfield / scrolling backdrop |
+| `Player` | `player.js` | Ship, beam charge, Force Pod, bombs; `Player.state` holds score/lives/combo/bombs |
+| `Enemies` | `enemies.js` | Enemy spawning, AI, rendering |
+| `Boss` | `boss.js` | 3-phase final boss (BYDO PRIME); calls `Game.win()` |
+| `Level1` | `level1.js` | Level script/timeline; `Level1.getTime()`, progress banner |
+| `Game` | `main.js` | Game loop + state machine; boots everything |
+
+### Game loop (`main.js`)
+
+- State machine: `TITLE → PLAY → (GAMEOVER \| WIN \| PAUSE)`.
+- `requestAnimationFrame` loop with `dt` clamped to `0.05` s.
+- `FX.timescale()` scales the simulation `dt` for slow-motion (e.g. grazing bullets),
+  while music ticks in **real** time.
+- `startGame()` resets every module in order, then sets state to `PLAY`.
+- Update order each frame: `Background → Level1 → Player → Enemies → Boss → Bullets →
+  Particles → Player.checkBulletCollisions → FX`.
+- Render order (back to front): `FX.preDraw → Background → Enemies → Boss → Bullets →
+  Particles → Player → FX.postDraw → HUD → Level1 banner`.
+
+## Conventions
+
+- Internal resolution is fixed at **800×450** (`W`, `H` constants in `main.js`).
+- New gameplay systems should follow the IIFE-module-as-global pattern, expose a
+  `reset()` called from `Game.startGame()`, and an `update(dt)` / `draw(ctx)` pair
+  wired into the loop in `main.js`. Add the `<script>` tag to `index.html` in the
+  correct dependency position.
+- Score thresholds drive end-of-game ranks (D / C / B / A / S / SS) in `main.js`.
+
+## Notes
+
+- `R-TYPELIKE/` (empty) and `R-TYPELIKE.zip` are leftover packaging artifacts, not
+  source. The live source is the top-level `index.html`, `style.css`, and `js/`.
+- This is not a git repository.

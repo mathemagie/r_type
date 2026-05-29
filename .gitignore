@@ -1,0 +1,6 @@
+# Packaging artifacts
+R-TYPELIKE.zip
+R-TYPELIKE/
+
+# macOS
+.DS_Store
