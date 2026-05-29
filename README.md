@@ -44,6 +44,7 @@ python3 -m http.server 8765     # puis ouvrir http://localhost:8765
 - Le Force Pod absorbe les balles ennemies quand il est près du vaisseau.
 - Combo élevé = multiplicateur de score (×1 à ×8).
 - Les bombes nettoient l'écran et infligent des dégâts à tout le monde.
+- Des **missiles à tête chercheuse** se tirent automatiquement et traquent l'ennemi le plus proche (ou le boss).
 
 Un run dure ~3 min 45 s avant le boss final (**BYDO PRIME**), puis un combat en 3 phases.
 

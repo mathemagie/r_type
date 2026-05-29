@@ -37,6 +37,8 @@ ASTUCES
 - Le Force Pod absorbe les balles ennemies quand il est près du vaisseau.
 - Combo élevé = multiplicateur de score (×1 à ×8).
 - Les bombes nettoient l'écran et infligent des dégâts à tout le monde.
+- Des missiles a tete chercheuse se tirent automatiquement et traquent
+  l'ennemi le plus proche (ou le boss).
 
 DURÉE D'UN RUN
 --------------

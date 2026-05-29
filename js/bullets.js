@@ -93,9 +93,47 @@ const Bullets = (() => {
     });
   }
 
+  function getPMissileSprite(color) {
+    const key = 'pmissile|' + color;
+    if (SPRITES.has(key)) return SPRITES.get(key);
+    const w = 18, h = 10;
+    return makeSprite(key, w, h, (cx) => {
+      cx.translate(w / 2, h / 2);
+      cx.fillStyle = color;
+      cx.shadowColor = color; cx.shadowBlur = 8;
+      cx.beginPath();
+      cx.moveTo(7, 0);
+      cx.lineTo(-2, -3);
+      cx.lineTo(-5, -2);
+      cx.lineTo(-5, 2);
+      cx.lineTo(-2, 3);
+      cx.closePath();
+      cx.fill();
+      cx.shadowBlur = 0;
+      cx.fillStyle = '#ffffff';
+      cx.fillRect(-1, -1, 5, 2);
+    });
+  }
+
   function alloc() {
     for (let i = 0; i < POOL; i++) if (!bs[i].alive) return bs[i];
     return null;
+  }
+
+  // Nearest live enemy ahead of (x,y) — homing target for friendly missiles
+  function nearestEnemy(x, y) {
+    if (typeof Enemies === 'undefined') return null;
+    const es = Enemies.all();
+    let best = null, bestD = Infinity;
+    for (let i = 0; i < es.length; i++) {
+      const e = es[i];
+      if (!e.alive || e.isPowerup) continue;
+      if (e.x < x - 30) continue; // prefer targets the missile is heading toward
+      const dx = e.x - x, dy = e.y - y;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
   }
 
   // type: 'pshot' = player simple shot, 'pbeam' = charged beam, 'eshot' = enemy basic,
@@ -127,19 +165,32 @@ const Bullets = (() => {
       b.life -= dt;
       if (b.life <= 0) { b.alive = false; continue; }
 
-      if (b.homing > 0 && playerRef && !b.friendly && playerRef.alive) {
-        const dx = playerRef.x - b.x;
-        const dy = playerRef.y - b.y;
-        const targetAng = Math.atan2(dy, dx);
-        const curAng = Math.atan2(b.vy, b.vx);
-        let diff = targetAng - curAng;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        const turn = Math.sign(diff) * Math.min(Math.abs(diff), b.homing * dt);
-        const newAng = curAng + turn;
-        const speed = Math.hypot(b.vx, b.vy);
-        b.vx = Math.cos(newAng) * speed;
-        b.vy = Math.sin(newAng) * speed;
+      if (b.homing > 0) {
+        let tx, ty, hasTarget = false;
+        if (b.friendly) {
+          // Friendly missiles seek the nearest enemy, falling back to the boss
+          const tgt = (b.target && b.target.alive && !b.target.isPowerup)
+            ? b.target : nearestEnemy(b.x, b.y);
+          if (tgt) { b.target = tgt; tx = tgt.x; ty = tgt.y; hasTarget = true; }
+          else if (typeof Boss !== 'undefined' && Boss.isActive()) {
+            const bp = Boss.target();
+            if (bp) { tx = bp.x; ty = bp.y; hasTarget = true; }
+          }
+        } else if (playerRef && playerRef.alive) {
+          tx = playerRef.x; ty = playerRef.y; hasTarget = true;
+        }
+        if (hasTarget) {
+          const targetAng = Math.atan2(ty - b.y, tx - b.x);
+          const curAng = Math.atan2(b.vy, b.vx);
+          let diff = targetAng - curAng;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          const turn = Math.sign(diff) * Math.min(Math.abs(diff), b.homing * dt);
+          const newAng = curAng + turn;
+          const speed = Math.hypot(b.vx, b.vy);
+          b.vx = Math.cos(newAng) * speed;
+          b.vy = Math.sin(newAng) * speed;
+        }
       }
 
       b.x += b.vx * dt;
@@ -155,6 +206,8 @@ const Bullets = (() => {
         if (Math.random() < 0.35) Particles.trail(b.x, b.y, b.vx, b.vy, b.color);
       } else if (b.type === 'ehoming') {
         if (Math.random() < 0.2) Particles.trail(b.x, b.y, b.vx, b.vy, b.color);
+      } else if (b.type === 'pmissile') {
+        if (Math.random() < 0.6) Particles.trail(b.x, b.y, b.vx, b.vy, b.color);
       }
     }
   }
@@ -163,6 +216,15 @@ const Bullets = (() => {
     for (let i = 0; i < POOL; i++) {
       const b = bs[i];
       if (!b.alive) continue;
+      if (b.type === 'pmissile') {
+        const sp = getPMissileSprite(b.color);
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(Math.atan2(b.vy, b.vx));
+        ctx.drawImage(sp, -sp.width / 2, -sp.height / 2);
+        ctx.restore();
+        continue;
+      }
       let sprite;
       if (b.type === 'pshot') sprite = getPShotSprite(b.color);
       else if (b.type === 'pbeam') sprite = getPBeamSprite(b.color);

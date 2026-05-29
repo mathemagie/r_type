@@ -404,7 +404,8 @@ const Boss = (() => {
 
   function isActive() { return active; }
   function isDefeated() { return active && b && b.hp <= 0 && b.dyingT <= 0; }
+  function target() { return active && b ? { x: b.x, y: b.y } : null; }
   function reset() { active = false; b = null; }
 
-  return { start, update, draw, damage, isActive, isDefeated, reset };
+  return { start, update, draw, damage, isActive, isDefeated, target, reset };
 })();

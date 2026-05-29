@@ -477,7 +477,7 @@ const Enemies = (() => {
       if (!e.alive || e.isPowerup) continue;
       damage(e, 6, e.x, e.y);
     }
-    if (window.Boss) Boss.damage(20);
+    if (typeof Boss !== 'undefined') Boss.damage(20);
   }
 
   function update(dt) {

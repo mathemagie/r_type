@@ -106,6 +106,13 @@ const Audio = (() => {
       [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.18, { type: 'triangle', vol: 0.18 }), i * 120));
     },
     graze() { tone(1500, 0.04, { type: 'square', vol: 0.05 }); },
+    missile() {
+      const now = performance.now();
+      if (now - (SFX._lastMissile || 0) < 120) return;
+      SFX._lastMissile = now;
+      tone(520, 0.1, { type: 'triangle', freqEnd: 920, vol: 0.05 });
+      noise(0.06, { cutoff: 3200, vol: 0.05 });
+    },
   };
 
   // Simple chiptune bass loop — driven by beat tick
