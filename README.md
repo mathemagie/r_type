@@ -24,8 +24,6 @@ Sans `make` :
 python3 -m http.server 8765     # puis ouvrir http://localhost:8765
 ```
 
-Sous Windows : double-cliquer sur **`Lancer.bat`**.
-
 ## Contrôles
 
 | Touche | Action |

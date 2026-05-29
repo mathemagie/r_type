@@ -17,8 +17,8 @@ The game must be served over HTTP (Chrome/Edge block `file://` script loading).
 python3 -m http.server 8765   # then open http://localhost:8765
 ```
 
-`Lancer.bat` is the Windows equivalent. There are no tests, no lint, and no build
-commands — edit a `.js` file and reload the browser.
+On Windows, run `python -m http.server 8765` and open the URL. There are no tests, no
+lint, and no build commands — edit a `.js` file and reload the browser.
 
 ## Architecture
 

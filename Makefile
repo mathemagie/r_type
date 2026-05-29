@@ -5,7 +5,7 @@ PORT    ?= 8765
 URL     := http://localhost:$(PORT)
 PYTHON  := $(shell command -v python3 2>/dev/null || command -v python 2>/dev/null)
 ZIP     := R-TYPELIKE.zip
-SRC     := index.html style.css js LISEZ-MOI.txt Lancer.bat lancer.sh
+SRC     := index.html style.css js LISEZ-MOI.txt lancer.sh
 LOG     := server.log
 PIDFILE := .server.pid
 

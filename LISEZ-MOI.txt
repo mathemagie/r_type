@@ -6,8 +6,9 @@
 COMMENT LANCER
 --------------
 1) Décompresser le ZIP n'importe où.
-2) Double-cliquer sur "Lancer.bat" (Windows)
-   OU lancer "lancer.sh" (Mac/Linux)
+2) Lancer "lancer.sh" (Mac/Linux)
+   OU sous Windows : "python -m http.server 8765" puis ouvrir
+      http://localhost:8765
    OU ouvrir directement index.html dans Firefox.
 
 NB : Sur Chrome/Edge, ouvrir index.html en double-clic peut être
