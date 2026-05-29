@@ -2,5 +2,9 @@
 R-TYPELIKE.zip
 R-TYPELIKE/
 
+# Dev server
+server.log
+.server.pid
+
 # macOS
 .DS_Store
