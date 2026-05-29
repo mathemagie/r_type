@@ -16,21 +16,39 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help serve run open package clean
+.PHONY: help serve run dev open package clean free
+
+# Kill any process already listening on $(PORT) so we can rebind cleanly
+define free_port
+	@pids=$$(lsof -ti tcp:$(PORT) 2>/dev/null); \
+	if [ -n "$$pids" ]; then \
+		echo "Port $(PORT) busy — stopping $$pids"; \
+		kill $$pids 2>/dev/null || true; \
+		sleep 1; \
+	fi
+endef
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-serve: ## Start a local HTTP server on $(PORT)
+serve: ## Start a local HTTP server on $(PORT) (frees the port first)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
+	$(call free_port)
 	@echo "Serving $(URL) (Ctrl-C to stop)"
 	@$(PYTHON) -m http.server $(PORT)
 
-run: ## Open the browser, then serve on $(PORT)
+run: ## Open the browser, then serve on $(PORT) (frees the port first)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
+	$(call free_port)
 	@( sleep 1 && $(OPEN) $(URL) ) &
 	@$(PYTHON) -m http.server $(PORT)
+
+free: ## Stop whatever is listening on $(PORT)
+	$(call free_port)
+	@echo "Port $(PORT) free."
+
+dev: run ## Alias for `run`
 
 open: ## Open $(URL) in the default browser (server must already be running)
 	@$(OPEN) $(URL)
