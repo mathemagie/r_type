@@ -72,4 +72,5 @@ Globals and their roles:
 
 - `R-TYPELIKE/` (empty) and `R-TYPELIKE.zip` are leftover packaging artifacts, not
   source. The live source is the top-level `index.html`, `style.css`, and `js/`.
-- This is not a git repository.
+- This is a git repository (default branch `main`); commits follow Conventional
+  Commits (`feat:`, `docs:`, `chore:`).
