@@ -17,8 +17,27 @@ The game must be served over HTTP (Chrome/Edge block `file://` script loading).
 python3 -m http.server 8765   # then open http://localhost:8765
 ```
 
-On Windows, run `python -m http.server 8765` and open the URL. There are no tests, no
-lint, and no build commands — edit a `.js` file and reload the browser.
+On Windows, run `python -m http.server 8765` and open the URL. There is no lint and no
+build step — edit a `.js` file and reload the browser.
+
+## Testing
+
+```bash
+make test           # node --test tests/*.test.js  (Node's built-in runner, zero deps)
+```
+
+`tests/helpers/harness.js` loads every IIFE module into a Node `vm` sandbox with
+stubbed Canvas / WebAudio / DOM, reproducing the browser's shared classic-script
+scope. Tests can drive the loop (`step()`), advance the clock, and dispatch events.
+
+**Always run `make test` before and after changes; keep it green** ("first run the
+tests" — establish a passing baseline, then work red→green). When adding a gameplay
+system, add a test asserting its global loads and its `update`/`draw` don't throw.
+
+Tests cover logic only — they can't see pixels. For visual/UX changes, also do a
+manual browser pass: `make dev`, then play through `title → play → boss → win`
+(score ≥ 60000 reaches rank SS), checking the HUD, the secondary weapon, and that
+nothing throws in the console.
 
 ## Architecture
 
