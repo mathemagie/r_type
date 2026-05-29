@@ -206,5 +206,23 @@ const Game = (() => {
   window.addEventListener('keydown', () => Audio.resume(), { once: true });
   window.addEventListener('click', () => Audio.resume(), { once: true });
 
+  // Fullscreen toggle (F). Must run inside the user gesture, so it is handled
+  // here directly rather than through the polled Input system.
+  function toggleFullscreen() {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) Promise.resolve(req.call(el)).catch(() => {});
+    } else {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) Promise.resolve(exit.call(document)).catch(() => {});
+    }
+  }
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyF') { e.preventDefault(); toggleFullscreen(); }
+  });
+  // Double-click the canvas to toggle fullscreen too
+  canvas.addEventListener('dblclick', toggleFullscreen);
+
   return { startGame, gameOver, win: _win };
 })();

@@ -28,6 +28,7 @@ CONTROLES
   R                     Rejouer après mort
   P                     Pause
   M                     Mute
+  F                     Plein écran (ou double-clic sur le jeu)
 
 ASTUCES
 -------

@@ -35,6 +35,7 @@ python3 -m http.server 8765     # puis ouvrir http://localhost:8765
 | Entrée | Démarrer / Rejouer |
 | R | Rejouer après la mort |
 | P | Pause · M | Mute |
+| F | Plein écran (ou double-clic sur le jeu) |
 
 ## Astuces
 
