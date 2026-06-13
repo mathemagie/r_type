@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>R-TYPELIKE — Neon Drift</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -25,8 +28,15 @@
         <div class="ctrl-label">Système</div>
         <div><span class="key">P</span> Pause &middot; <span class="key">M</span> Mute &middot; <span class="key">F</span> Plein écran</div>
       </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">DualShock 4</div>
+        <div><span class="key">Stick</span> / <span class="key">D-pad</span> Mouvement</div>
+        <div><span class="key">Croix</span> / <span class="key">R2</span> Tir &middot; <span class="key">Rond</span> Bombe &middot; <span class="key">Carré</span> / <span class="key">L1</span> Force Pod</div>
+        <div><span class="key">Options</span> Démarrer &middot; <span class="key">Share</span> Pause &middot; <span class="key">L3</span> Mute</div>
+      </div>
     </div>
-    <p class="start-prompt">[ APPUYEZ SUR <b>ENTRÉE</b> POUR DÉCOLLER ]</p>
+    <p class="start-prompt">[ APPUYEZ SUR <b>ENTRÉE</b> OU <b>OPTIONS</b> POUR DÉCOLLER ]</p>
+    <p class="gamepad-hint">Manette : cliquez sur l'écran, puis appuyez sur un bouton.</p>
   </div>
 
   <div id="gameover" class="screen">
@@ -46,6 +56,15 @@
   <div id="pause" class="screen">
     <h1 class="title-pause">PAUSE</h1>
     <p class="start-prompt">[ <b>P</b> pour reprendre ]</p>
+  </div>
+
+  <div id="gamepad-status" aria-live="polite" aria-atomic="true">
+    <span class="gamepad-led" aria-hidden="true"></span>
+    <span class="gamepad-icon" aria-hidden="true"></span>
+    <span class="gamepad-copy">
+      <span class="gamepad-kicker">MANETTE DÉTECTÉE</span>
+      <span class="gamepad-name"></span>
+    </span>
   </div>
 </div>
 

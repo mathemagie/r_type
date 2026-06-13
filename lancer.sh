@@ -28,4 +28,4 @@ echo "Serveur local : http://localhost:8765"
   fi
 )) &
 
-$PYCMD -m http.server 8765
+$PYCMD serve.py 8765

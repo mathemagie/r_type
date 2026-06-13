@@ -164,3 +164,135 @@ h1.title-pause {
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(1.35); }
 }
+
+#gamepad-status {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 10px;
+  background: rgba(4, 10, 18, 0.88);
+  border: 1px solid #1e4a62;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px rgba(0, 225, 255, 0.08),
+    0 0 18px rgba(0, 225, 255, 0.12);
+  color: #7af0ff;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+#gamepad-status.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+#gamepad-status.waiting,
+#gamepad-status.wake {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: #ffe45a;
+  box-shadow:
+    0 0 0 1px rgba(255, 228, 90, 0.2),
+    0 0 18px rgba(255, 228, 90, 0.18);
+}
+
+#gamepad-status.waiting .gamepad-led,
+#gamepad-status.wake .gamepad-led {
+  background: #ffe45a;
+  box-shadow: 0 0 8px #ffe45a, 0 0 16px rgba(255, 228, 90, 0.55);
+}
+
+#gamepad-status.waiting .gamepad-kicker,
+#gamepad-status.wake .gamepad-kicker {
+  color: #ffe45a;
+  text-shadow: 0 0 8px rgba(255, 228, 90, 0.45);
+}
+
+.gamepad-hint {
+  margin-top: 14px;
+  font-size: clamp(10px, 1.1vw, 12px);
+  color: #7af0ff;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+#gamepad-status.flash {
+  border-color: #6dff8e;
+  box-shadow:
+    0 0 0 1px rgba(109, 255, 142, 0.35),
+    0 0 24px rgba(109, 255, 142, 0.45);
+  animation: gamepad-pop 0.55s ease-out;
+}
+
+.gamepad-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6dff8e;
+  box-shadow: 0 0 8px #6dff8e, 0 0 16px rgba(109, 255, 142, 0.65);
+  animation: gamepad-led 1.4s ease-in-out infinite;
+}
+
+.gamepad-icon {
+  position: relative;
+  width: 24px;
+  height: 16px;
+  border: 2px solid #7af0ff;
+  border-radius: 9px;
+  box-shadow: 0 0 8px rgba(122, 240, 255, 0.35);
+}
+
+.gamepad-icon::before,
+.gamepad-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: #ffe45a;
+  box-shadow: 0 0 4px #ffe45a;
+}
+
+.gamepad-icon::before { left: 5px; }
+.gamepad-icon::after { right: 5px; }
+
+.gamepad-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.gamepad-kicker {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: #6dff8e;
+  text-shadow: 0 0 8px rgba(109, 255, 142, 0.55);
+}
+
+.gamepad-name {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 0.06em;
+}
+
+@keyframes gamepad-led {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+@keyframes gamepad-pop {
+  0% { transform: translateY(8px) scale(0.9); }
+  45% { transform: translateY(-2px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}

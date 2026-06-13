@@ -38,13 +38,13 @@ serve: ## Start a local HTTP server on $(PORT) (frees the port first)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
 	$(call free_port)
 	@echo "Serving $(URL) (Ctrl-C to stop)"
-	@$(PYTHON) -m http.server $(PORT)
+	@$(PYTHON) serve.py $(PORT)
 
 run: ## Open the browser, then serve on $(PORT) (frees the port first)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
 	$(call free_port)
 	@( sleep 1 && $(OPEN) $(URL) ) &
-	@$(PYTHON) -m http.server $(PORT)
+	@$(PYTHON) serve.py $(PORT)
 
 test: ## Run the headless module test suite (Node's built-in runner)
 	@command -v node >/dev/null 2>&1 || { echo "Node.js not found. Install from nodejs.org."; exit 1; }
@@ -57,7 +57,7 @@ free: ## Stop whatever is listening on $(PORT)
 dev: ## Start the server in the background, logging to $(LOG)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
 	$(call free_port)
-	@$(PYTHON) -m http.server $(PORT) > $(LOG) 2>&1 & echo $$! > $(PIDFILE)
+	@$(PYTHON) serve.py $(PORT) > $(LOG) 2>&1 & echo $$! > $(PIDFILE)
 	@sleep 1
 	@echo "Serving $(URL) (pid $$(cat $(PIDFILE))) — logging to $(LOG)"
 	@echo "Tail logs: make logs   Stop: make stop"
