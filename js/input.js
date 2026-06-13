@@ -150,14 +150,18 @@ const Input = (() => {
     });
   }
 
-  function logButtonActivity(gp) {
+  function logButtonActivity(gp, actions) {
     const pressedBtns = [];
     for (let i = 0; i < gp.buttons.length; i++) {
       if (btnPressed(gp.buttons[i])) pressedBtns.push(i);
     }
-    const key = pressedBtns.join(',');
-    if (key && key !== lastPressedBtns) {
-      gpLog(GP_LOG, 'buttons pressed', pressedBtns, {
+    const resolved = ACTIONS.filter((a) => actions && actions[a]);
+    const key = pressedBtns.join(',') + '|' + resolved.join(',');
+    if (key !== lastPressedBtns && (pressedBtns.length || resolved.length)) {
+      // Always-on (not gated by ?gpdebug) so controller issues are visible in the console.
+      console.log(GP_LOG, 'btns', pressedBtns, '-> actions', resolved, {
+        profile: activeProfile,
+        id: gp.id,
         axes: Array.from(gp.axes).map((v) => Number(v.toFixed(3))),
       });
     }
@@ -378,7 +382,7 @@ const Input = (() => {
     const { actions, ax, ay } = readGamepadState(live, activeProfile);
     gpAxisX = ax;
     gpAxisY = ay;
-    logButtonActivity(live);
+    logButtonActivity(live, actions);
 
     for (let i = 0; i < ACTIONS.length; i++) {
       setActionEdge(ACTIONS[i], !!actions[ACTIONS[i]]);
