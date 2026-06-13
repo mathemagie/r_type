@@ -15,6 +15,39 @@ const Game = (() => {
   const overEl = document.getElementById('gameover');
   const winEl = document.getElementById('win');
   const pauseEl = document.getElementById('pause');
+  const gamepadStatusEl = document.getElementById('gamepad-status');
+  const gamepadNameEl = gamepadStatusEl.querySelector('.gamepad-name');
+  const gamepadKickerEl = gamepadStatusEl.querySelector('.gamepad-kicker');
+
+  let gamepadWasConnected = false;
+  let gamepadFlashT = 0;
+
+  function updateGamepadStatus(dt) {
+    if (!gamepadStatusEl) return;
+    const connected = Input.hasGamepad();
+    const waiting = Input.gamepadWaiting();
+    const needsClick = Input.gamepadApiSupported() && !Input.hasUserGesture();
+
+    if (connected && !gamepadWasConnected) gamepadFlashT = 0.9;
+    gamepadWasConnected = connected;
+    gamepadFlashT = Math.max(0, gamepadFlashT - dt);
+
+    gamepadStatusEl.classList.toggle('show', connected);
+    gamepadStatusEl.classList.toggle('waiting', waiting);
+    gamepadStatusEl.classList.toggle('wake', needsClick);
+    gamepadStatusEl.classList.toggle('flash', gamepadFlashT > 0);
+
+    if (connected && gamepadNameEl) {
+      gamepadKickerEl.textContent = 'MANETTE DÉTECTÉE';
+      gamepadNameEl.textContent = Input.gamepadLabel();
+    } else if (waiting) {
+      gamepadKickerEl.textContent = 'RECHERCHE MANETTE';
+      gamepadNameEl.textContent = 'Appuyez sur un bouton';
+    } else if (needsClick) {
+      gamepadKickerEl.textContent = 'MANETTE PRÊTE';
+      gamepadNameEl.textContent = 'Cliquez sur le jeu';
+    }
+  }
 
   function setState(s) {
     prevState = state;
@@ -64,6 +97,8 @@ const Game = (() => {
     let dt = Math.min(0.05, (now - lastTime) / 1000);
     lastTime = now;
 
+    Input.poll();
+
     if (state === STATE.TITLE) {
       if (Input.wasPressed('start')) startGame();
     } else if (state === STATE.GAMEOVER || state === STATE.WIN) {
@@ -105,6 +140,7 @@ const Game = (() => {
 
     render();
     Input.endFrame();
+    updateGamepadStatus(dt);
     requestAnimationFrame(loop);
   }
 
@@ -257,6 +293,7 @@ const Game = (() => {
   // Ensure audio context resumed on first user input
   window.addEventListener('keydown', () => Audio.resume(), { once: true });
   window.addEventListener('click', () => Audio.resume(), { once: true });
+  window.addEventListener('gamepadconnected', () => Audio.resume(), { once: true });
 
   // Fullscreen toggle (F). Must run inside the user gesture, so it is handled
   // here directly rather than through the polled Input system.

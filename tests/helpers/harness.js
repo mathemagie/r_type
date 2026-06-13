@@ -77,6 +77,26 @@ function makeCanvas(width = 800, height = 450) {
 // ---- DOM element stub -------------------------------------------------------
 function makeElement(id) {
   const classes = new Set();
+  const children = new Map();
+  function childStub(selector) {
+    if (!children.has(selector)) {
+      const childClasses = new Set();
+      children.set(selector, {
+        textContent: '',
+        classList: {
+          add: (c) => childClasses.add(c),
+          remove: (c) => childClasses.delete(c),
+          contains: (c) => childClasses.has(c),
+          toggle: (c, force) => {
+            const on = force === undefined ? !childClasses.has(c) : !!force;
+            if (on) childClasses.add(c); else childClasses.delete(c);
+            return on;
+          },
+        },
+      });
+    }
+    return children.get(selector);
+  }
   return {
     id,
     textContent: '',
@@ -91,6 +111,7 @@ function makeElement(id) {
         return on;
       },
     },
+    querySelector: (selector) => childStub(selector),
     addEventListener() {},
     removeEventListener() {},
     appendChild() {},
@@ -203,7 +224,10 @@ function loadGame(opts = {}) {
   const sandbox = {
     window: windowStub,
     document: documentStub,
-    navigator: { userAgent: 'node-test' },
+    navigator: {
+      userAgent: 'node-test',
+      getGamepads: () => [null, null, null, null],
+    },
     console,
     performance: { now: () => clockNow },
     requestAnimationFrame: (cb) => { rafCallback = cb; return 1; },
