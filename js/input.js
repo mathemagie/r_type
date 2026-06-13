@@ -74,9 +74,14 @@ const Input = (() => {
   ];
 
   const GP_LOG = '[Gamepad]';
+  const GP_DEBUG = typeof location !== 'undefined' && location.search.includes('gpdebug');
   let lastScanLog = 0;
   let lastActiveId = null;
   let lastPressedBtns = '';
+
+  function gpLog(...args) {
+    if (GP_DEBUG) console.log(...args);
+  }
 
   function summarizePad(gp) {
     if (!gp) return null;
@@ -120,7 +125,7 @@ const Input = (() => {
       || reason === 'blur';
     if (!important && now - lastScanLog < 2000) return;
     lastScanLog = now;
-    console.log(GP_LOG, `scan (${reason})`, {
+    gpLog(GP_LOG, `scan (${reason})`, {
       userGestured,
       secureContext: pageSecure(),
       href: pageHref(),
@@ -136,10 +141,10 @@ const Input = (() => {
     if (id === lastActiveId) return;
     lastActiveId = id;
     if (!gp) {
-      console.log(GP_LOG, 'active cleared');
+      gpLog(GP_LOG, 'active cleared');
       return;
     }
-    console.log(GP_LOG, 'active pad', {
+    gpLog(GP_LOG, 'active pad', {
       ...summarizePad(gp),
       profile: resolveProfile(gp),
     });
@@ -152,7 +157,7 @@ const Input = (() => {
     }
     const key = pressedBtns.join(',');
     if (key && key !== lastPressedBtns) {
-      console.log(GP_LOG, 'buttons pressed', pressedBtns, {
+      gpLog(GP_LOG, 'buttons pressed', pressedBtns, {
         axes: Array.from(gp.axes).map((v) => Number(v.toFixed(3))),
       });
     }
@@ -296,6 +301,9 @@ const Input = (() => {
     for (let i = 0; i < pads.length; i++) {
       if (pads[i]) gpSlots[i] = pads[i];
     }
+    for (const idx in gpSlots) {
+      if (gpSlots[idx] && gpSlots[idx].connected === false) delete gpSlots[idx];
+    }
   }
 
   function pickGamepad() {
@@ -382,15 +390,12 @@ const Input = (() => {
   window.addEventListener('touchstart', scanGamepads, { passive: true });
 
   window.addEventListener('blur', () => {
-    console.log(GP_LOG, 'window blur — clearing keyboard + gamepad state');
+    gpLog(GP_LOG, 'window blur — clearing keyboard state');
     for (const k in keys) keys[k] = false;
-    logScan('blur');
-    clearGamepadState();
-    lastActiveId = null;
   });
 
   window.addEventListener('gamepadconnected', (e) => {
-    console.log(GP_LOG, 'gamepadconnected event', summarizePad(e.gamepad));
+    gpLog(GP_LOG, 'gamepadconnected event', summarizePad(e.gamepad));
     userGestured = true;
     gpSlots[e.gamepad.index] = e.gamepad;
     logScan('connected');
@@ -398,25 +403,27 @@ const Input = (() => {
   });
 
   window.addEventListener('gamepaddisconnected', (e) => {
-    console.log(GP_LOG, 'gamepaddisconnected event', summarizePad(e.gamepad));
+    gpLog(GP_LOG, 'gamepaddisconnected event', summarizePad(e.gamepad));
     delete gpSlots[e.gamepad.index];
     logScan('disconnected');
     pollGamepad();
   });
 
   if (!('ongamepadconnected' in window)) {
-    console.log(GP_LOG, 'no gamepadconnected event — enabling 500ms interval scan');
+    gpLog(GP_LOG, 'no gamepadconnected event — enabling 500ms interval scan');
     setInterval(() => scanGamepads('interval'), 500);
   }
 
-  console.log(GP_LOG, 'init', {
-    api: gamepadApiSupported(),
-    events: 'ongamepadconnected' in window,
-    secureContext: pageSecure(),
-    href: pageHref(),
-    hint: 'Click the page, then press any controller button. Watch logs prefixed [Gamepad].',
-  });
-  logScan('boot');
+  if (GP_DEBUG) {
+    gpLog(GP_LOG, 'init', {
+      api: gamepadApiSupported(),
+      events: 'ongamepadconnected' in window,
+      secureContext: pageSecure(),
+      href: pageHref(),
+      hint: 'Add ?gpdebug to the URL for [Gamepad] logs. Or run Input.debugGamepad() in the console.',
+    });
+    logScan('boot');
+  }
 
   return {
     isDown(k) { return !!keys[k] || !!gpDown[k]; },
@@ -447,7 +454,6 @@ const Input = (() => {
     endFrame() {
       for (const k in pressed) pressed[k] = false;
       for (const k in released) released[k] = false;
-      pollGamepad();
     },
     axis() {
       let x = 0;

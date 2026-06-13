@@ -22,9 +22,15 @@ function setPads(g, pads) {
   g.sandbox.navigator.getGamepads = () => list;
 }
 
+function tick(g) {
+  g.Input.poll();
+  g.Input.endFrame();
+}
+
 test('Input polls gamepad without throwing when no pad is connected', () => {
   const g = loadGame();
   assert.doesNotThrow(() => {
+    g.Input.poll();
     g.Input.endFrame();
     g.Input.axis();
     g.Input.isDown('fire');
@@ -35,7 +41,7 @@ test('Input polls gamepad without throwing when no pad is connected', () => {
 test('gamepad stick movement feeds Input.axis()', () => {
   const g = loadGame();
   setPads(g, [makeGamepad({ axes: [0.9, -0.8] })]);
-  g.Input.endFrame();
+  g.Input.poll();
   const { x, y } = g.Input.axis();
   assert.ok(x > 0.5, 'stick right should move x positive');
   assert.ok(y < -0.5, 'stick up should move y negative');
@@ -46,21 +52,23 @@ test('gamepad button edges map to wasPressed and wasReleased', () => {
   const buttons = new Array(16).fill(0).map(() => ({ pressed: false, value: 0 }));
 
   setPads(g, [makeGamepad({ buttons })]);
-  g.Input.endFrame();
+  tick(g);
 
   buttons[0].pressed = true;
   buttons[0].value = 1;
   setPads(g, [makeGamepad({ buttons })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.wasPressed('fire'), true, 'A button should fire');
+  tick(g);
 
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.isDown('fire'), true, 'A held should keep fire down');
+  tick(g);
 
   buttons[0].pressed = false;
   buttons[0].value = 0;
   setPads(g, [makeGamepad({ buttons })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.wasReleased('fire'), true, 'releasing A should release fire');
 });
 
@@ -68,12 +76,11 @@ test('gamepad start button starts the game from title', () => {
   const g = loadGame();
   const buttons = new Array(16).fill(0).map(() => ({ pressed: false, value: 0 }));
   setPads(g, [makeGamepad({ buttons })]);
-  g.Input.endFrame();
+  tick(g);
 
   buttons[9].pressed = true;
   buttons[9].value = 1;
   setPads(g, [makeGamepad({ buttons })]);
-  g.Input.endFrame();
 
   g.step(g.clock.now());
   assert.equal(g.getElement('overlay').classList.contains('show'), false);
@@ -95,7 +102,7 @@ test('game loop update and draw stay stable while polling a gamepad', () => {
   assert.doesNotThrow(() => {
     for (let i = 0; i < 30; i++) {
       g.clock.advance(16);
-      g.Input.endFrame();
+      tick(g);
       g.Player.update(1 / 60);
       g.Player.draw(g.ctx);
     }
@@ -110,7 +117,7 @@ test('DualShock 4 standard mapping uses Cross for fire', () => {
     mapping: 'standard',
     buttons,
   })]);
-  g.Input.endFrame();
+  tick(g);
 
   buttons[0].pressed = true;
   buttons[0].value = 1;
@@ -119,7 +126,7 @@ test('DualShock 4 standard mapping uses Cross for fire', () => {
     mapping: 'standard',
     buttons,
   })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.gamepadProfile(), 'dualshock4');
   assert.equal(g.Input.wasPressed('fire'), true);
 });
@@ -134,10 +141,10 @@ test('DualShock 4 raw HID maps Cross on button 1 and R2 on axis 4', () => {
     buttons,
     axes: [0, 0, 0, 0, 0.9],
   })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.gamepadProfile(), 'dualshock4-raw');
   assert.equal(g.Input.wasPressed('fire'), true, 'R2 axis should fire');
-  g.Input.endFrame();
+  tick(g);
 
   setPads(g, [makeGamepad({
     id: '054c-09cc-DualShock 4 Wireless Controller',
@@ -145,7 +152,7 @@ test('DualShock 4 raw HID maps Cross on button 1 and R2 on axis 4', () => {
     buttons,
     axes: [0, 0, 0, 0, 0],
   })]);
-  g.Input.endFrame();
+  tick(g);
 
   buttons[1].pressed = true;
   buttons[1].value = 1;
@@ -155,7 +162,7 @@ test('DualShock 4 raw HID maps Cross on button 1 and R2 on axis 4', () => {
     buttons,
     axes: [0, 0, 0, 0, 0],
   })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.wasPressed('fire'), true, 'Cross on button 1 should fire');
 });
 
@@ -167,7 +174,7 @@ test('DualShock 4 raw Options button starts the game', () => {
     mapping: '',
     buttons,
   })]);
-  g.Input.endFrame();
+  tick(g);
 
   buttons[9].pressed = true;
   buttons[9].value = 1;
@@ -176,7 +183,7 @@ test('DualShock 4 raw Options button starts the game', () => {
     mapping: '',
     buttons,
   })]);
-  g.Input.endFrame();
+
   g.step(g.clock.now());
   assert.equal(g.getElement('overlay').classList.contains('show'), false);
 });
@@ -184,7 +191,7 @@ test('DualShock 4 raw Options button starts the game', () => {
 test('gamepadLabel returns a friendly controller name', () => {
   const g = loadGame();
   setPads(g, [makeGamepad({ id: '054c-05c4-Wireless Controller', mapping: 'standard' })]);
-  g.Input.endFrame();
+  g.Input.poll();
   assert.equal(g.Input.gamepadLabel(), 'DualShock 4');
 });
 
@@ -194,6 +201,18 @@ test('gamepadconnected event registers pad before getGamepads snapshot', () => {
   g.dispatch('gamepadconnected', { gamepad: pad });
   assert.equal(g.Input.hasGamepad(), true);
   assert.equal(g.Input.gamepadProfile(), 'dualshock4');
+});
+
+test('gamepaddisconnected clears active pad and stale slots', () => {
+  const g = loadGame();
+  const pad = makeGamepad({ id: '054c-05c4-Wireless Controller', mapping: 'standard' });
+  g.dispatch('gamepadconnected', { gamepad: pad });
+  assert.equal(g.Input.hasGamepad(), true);
+
+  g.dispatch('gamepaddisconnected', { gamepad: pad });
+  g.sandbox.navigator.getGamepads = () => [null, null, null, null];
+  g.Input.poll();
+  assert.equal(g.Input.hasGamepad(), false);
 });
 
 test('gamepadWaiting is true after user gesture but before pad is found', () => {

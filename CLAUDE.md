@@ -12,13 +12,14 @@ assets). UI text is in French.
 The game must be served over HTTP (Chrome/Edge block `file://` script loading).
 
 ```bash
-./lancer.sh          # macOS/Linux: starts `python3 -m http.server 8765` + opens browser
+./lancer.sh          # macOS/Linux: starts serve.py on :8765 + opens browser
 # or directly:
-python3 -m http.server 8765   # then open http://localhost:8765
+python3 serve.py 8765   # then open http://localhost:8765
 ```
 
-On Windows, run `python -m http.server 8765` and open the URL. There is no lint and no
-build step — edit a `.js` file and reload the browser.
+`serve.py` is a tiny no-cache static server for local dev. On Windows, run
+`python serve.py 8765` and open the URL. There is no lint and no build step —
+edit a `.js` file and reload the browser.
 
 ## Testing
 
@@ -57,7 +58,7 @@ Globals and their roles:
 | `FX` | `fx.js` | Screen shake, slow-motion `timescale`, pre/post draw passes |
 | `Particles` | `particles.js` | Particle pool + rendering |
 | `Audio` | `audio.js` | WebAudio music + `Audio.SFX.*` procedural sound effects |
-| `Input` | `input.js` | Keyboard state; `Input.wasPressed('start'\|'restart'\|'pause'\|'mute'…)`, `Input.endFrame()` |
+| `Input` | `input.js` | Keyboard + Gamepad API; `Input.isDown`/`wasPressed`/`axis()`, `Input.poll()`, `Input.hasGamepad()`, `Input.endFrame()`; DS4 standard + raw profiles; debug via `?gpdebug` or `Input.debugGamepad()` |
 | `Bullets` | `bullets.js` | Player + enemy bullet pools, `Bullets.update(dt, Player.state)` |
 | `Background` | `background.js` | Parallax starfield / scrolling backdrop |
 | `Player` | `player.js` | Ship, beam charge, Force Pod, bombs; `Player.state` holds score/lives/combo/bombs |
