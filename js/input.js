@@ -273,16 +273,30 @@ const Input = (() => {
     return next;
   }
 
+  // DS4 reports different button indices on macOS (raw HID vs standard mapping).
+  // Merge both layouts so Cross / Options / R2 work regardless of profile string.
+  function readDualShock4State(gp) {
+    const std = readMappedState(gp, STANDARD_BTN);
+    const raw = readMappedState(gp, DS4_RAW_BTN, DS4_RAW_TRIGGERS);
+    const next = {};
+    for (let i = 0; i < ACTIONS.length; i++) {
+      const a = ACTIONS[i];
+      next[a] = !!(std[a] || raw[a]);
+    }
+    next.fire = next.fire || anyTrigger(gp, [4, 5]);
+    if (!next.up && !next.down && !next.left && !next.right) {
+      applyDs4Hat(next, gp.axes[9]);
+    }
+    if (!next.up && !next.down && !next.left && !next.right) {
+      applyAxisDpad(next, gp);
+    }
+    return next;
+  }
+
   function readGamepadState(gp, profile) {
     let next;
-    if (profile === 'dualshock4-raw') {
-      next = readMappedState(gp, DS4_RAW_BTN, DS4_RAW_TRIGGERS);
-      if (!next.up && !next.down && !next.left && !next.right) {
-        applyDs4Hat(next, gp.axes[9]);
-      }
-      if (!next.up && !next.down && !next.left && !next.right) {
-        applyAxisDpad(next, gp);
-      }
+    if (profile === 'dualshock4' || profile === 'dualshock4-raw') {
+      next = readDualShock4State(gp);
     } else {
       next = readMappedState(gp, STANDARD_BTN);
       if (!next.up && !next.down && !next.left && !next.right) {
@@ -306,15 +320,20 @@ const Input = (() => {
     }
   }
 
-  function pickGamepad() {
+  // GamepadEvent.gamepad is a snapshot — only navigator.getGamepads()[i] updates live.
+  function pickLiveGamepad() {
     refreshGamepadSlots();
-    for (const idx in gpSlots) {
-      const gp = gpSlots[idx];
-      if (gp && gp.connected) return gp;
-    }
     const pads = getGamepads() || [];
     for (let i = 0; i < pads.length; i++) {
       if (pads[i] && pads[i].connected) return pads[i];
+    }
+    return null;
+  }
+
+  function pickSlotGamepad() {
+    for (const idx in gpSlots) {
+      const gp = gpSlots[idx];
+      if (gp && gp.connected) return gp;
     }
     return null;
   }
@@ -338,23 +357,28 @@ const Input = (() => {
   }
 
   function pollGamepad() {
-    const hadPad = !!activePad;
-    const gp = pickGamepad();
-    if (!gp) {
-      if (hadPad) {
+    const hadLive = !!activePad;
+    const live = pickLiveGamepad();
+    const slot = pickSlotGamepad();
+
+    if (!live) {
+      if (slot) {
+        activePad = slot;
+        activeProfile = resolveProfile(slot);
+      } else if (hadLive) {
         logActiveChange(null);
         clearGamepadState();
       }
       return;
     }
 
-    if (!hadPad || activePad !== gp) logActiveChange(gp);
-    activePad = gp;
-    activeProfile = resolveProfile(gp);
-    const { actions, ax, ay } = readGamepadState(gp, activeProfile);
+    if (!hadLive || activePad !== live) logActiveChange(live);
+    activePad = live;
+    activeProfile = resolveProfile(live);
+    const { actions, ax, ay } = readGamepadState(live, activeProfile);
     gpAxisX = ax;
     gpAxisY = ay;
-    logButtonActivity(gp);
+    logButtonActivity(live);
 
     for (let i = 0; i < ACTIONS.length; i++) {
       setActionEdge(ACTIONS[i], !!actions[ACTIONS[i]]);
@@ -429,24 +453,35 @@ const Input = (() => {
     isDown(k) { return !!keys[k] || !!gpDown[k]; },
     wasPressed(k) { return !!pressed[k]; },
     wasReleased(k) { return !!released[k]; },
-    hasGamepad() { return !!activePad; },
+    hasGamepad() { return !!pickLiveGamepad(); },
     gamepadApiSupported,
     hasUserGesture() { return userGestured; },
-    gamepadWaiting() { return gamepadApiSupported() && userGestured && !activePad; },
+    gamepadWaiting() {
+      return gamepadApiSupported() && userGestured && !pickLiveGamepad();
+    },
     gamepadId() { return activePad ? activePad.id : ''; },
     gamepadProfile() { return activeProfile; },
     gamepadLabel,
     poll: pollGamepad,
     debugGamepad() {
+      const live = pickLiveGamepad();
+      const pressedBtns = [];
+      if (live) {
+        for (let i = 0; i < live.buttons.length; i++) {
+          if (btnPressed(live.buttons[i])) pressedBtns.push(i);
+        }
+      }
       const snap = {
         userGestured,
         secureContext: pageSecure(),
         getGamepads: summarizePads(),
         cachedSlots: summarizeSlots(),
-        active: summarizePad(activePad),
-        profile: activeProfile,
+        active: summarizePad(live || activePad),
+        profile: live ? resolveProfile(live) : activeProfile,
         label: gamepadLabel(),
-        waiting: gamepadApiSupported() && userGestured && !activePad,
+        pressedButtons: pressedBtns,
+        axes: live ? Array.from(live.axes).map((v) => Number(v.toFixed(3))) : [],
+        waiting: gamepadApiSupported() && userGestured && !live,
       };
       console.log(GP_LOG, 'debug snapshot', snap);
       return snap;

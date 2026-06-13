@@ -199,14 +199,68 @@ test('gamepadconnected event registers pad before getGamepads snapshot', () => {
   const g = loadGame();
   const pad = makeGamepad({ id: '054c-05c4-Wireless Controller', mapping: 'standard' });
   g.dispatch('gamepadconnected', { gamepad: pad });
+  setPads(g, [pad]);
+  g.Input.poll();
   assert.equal(g.Input.hasGamepad(), true);
   assert.equal(g.Input.gamepadProfile(), 'dualshock4');
+});
+
+test('stale gamepadconnected snapshot does not read button presses', () => {
+  const g = loadGame();
+  const stale = makeGamepad({
+    id: '054c-09cc-DualShock 4 Wireless Controller',
+    mapping: '',
+    buttons: [{ pressed: false, value: 0 }, ...new Array(15).fill({ pressed: false, value: 0 })],
+  });
+  stale.buttons[1].pressed = true;
+  g.dispatch('gamepadconnected', { gamepad: stale });
+  g.Input.poll();
+  assert.equal(g.Input.hasGamepad(), false, 'event snapshot alone is not a live pad');
+  assert.equal(g.Input.wasPressed('fire'), false, 'stale snapshot must not register presses');
+
+  const live = makeGamepad({
+    id: '054c-09cc-DualShock 4 Wireless Controller',
+    mapping: '',
+    buttons: new Array(16).fill(0).map(() => ({ pressed: false, value: 0 })),
+  });
+  live.buttons[1].pressed = true;
+  live.buttons[1].value = 1;
+  setPads(g, [live]);
+  g.Input.poll();
+  assert.equal(g.Input.hasGamepad(), true);
+  assert.equal(g.Input.wasPressed('fire'), true);
+});
+
+test('DualShock 4 unified mapping accepts Cross on button 0 or 1', () => {
+  const g = loadGame();
+  for (const crossIndex of [0, 1]) {
+    const buttons = new Array(16).fill(0).map(() => ({ pressed: false, value: 0 }));
+    setPads(g, [makeGamepad({
+      id: '054c-05c4-Wireless Controller',
+      mapping: 'standard',
+      buttons,
+    })]);
+    tick(g);
+
+    buttons[crossIndex].pressed = true;
+    buttons[crossIndex].value = 1;
+    setPads(g, [makeGamepad({
+      id: '054c-05c4-Wireless Controller',
+      mapping: 'standard',
+      buttons,
+    })]);
+    g.Input.poll();
+    assert.equal(g.Input.wasPressed('fire'), true, `Cross on button ${crossIndex} should fire`);
+    tick(g);
+  }
 });
 
 test('gamepaddisconnected clears active pad and stale slots', () => {
   const g = loadGame();
   const pad = makeGamepad({ id: '054c-05c4-Wireless Controller', mapping: 'standard' });
   g.dispatch('gamepadconnected', { gamepad: pad });
+  setPads(g, [pad]);
+  g.Input.poll();
   assert.equal(g.Input.hasGamepad(), true);
 
   g.dispatch('gamepaddisconnected', { gamepad: pad });

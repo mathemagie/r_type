@@ -57,7 +57,7 @@ free: ## Stop whatever is listening on $(PORT)
 dev: ## Start the server in the background, logging to $(LOG)
 	@test -n "$(PYTHON)" || { echo "Python 3 not found. Install from python.org."; exit 1; }
 	$(call free_port)
-	@$(PYTHON) serve.py $(PORT) > $(LOG) 2>&1 & echo $$! > $(PIDFILE)
+	@nohup $(PYTHON) serve.py $(PORT) > $(LOG) 2>&1 & echo $$! > $(PIDFILE)
 	@sleep 1
 	@echo "Serving $(URL) (pid $$(cat $(PIDFILE))) — logging to $(LOG)"
 	@echo "Tail logs: make logs   Stop: make stop"
