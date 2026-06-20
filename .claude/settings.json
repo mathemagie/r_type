@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -qE '(^|[^-])git +commit'; then ./cache-bust.sh >/dev/null 2>&1 && git add index.html >/dev/null 2>&1; fi; true",
+            "statusMessage": "Stamping cache-busting hashes into index.html"
+          }
+        ]
+      }
+    ]
+  }
+}
