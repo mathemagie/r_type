@@ -21,6 +21,17 @@ python3 serve.py 8765   # then open http://localhost:8765
 `python serve.py 8765` and open the URL. There is no lint and no build step —
 edit a `.js` file and reload the browser.
 
+## Deploying
+
+The repo auto-deploys to GitHub Pages on every push to `main` (no CI workflow;
+Pages builds the branch directly). GitHub Pages can't set custom cache headers,
+so **run `./cache-bust.sh` before committing a deploy**. It stamps each
+`js/*.js` and `style.css` reference in `index.html` with a `?v=<content-hash>`
+query string, forcing browsers to re-fetch only the modules that changed. The
+script is idempotent — re-running with no source changes leaves `index.html`
+untouched. (Caveat: Pages also caches `index.html` itself for a few minutes,
+which no client-side technique can shorten.)
+
 ## Testing
 
 ```bash
