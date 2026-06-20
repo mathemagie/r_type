@@ -51,53 +51,6 @@ const Enemies = (() => {
         ctx.restore();
       }
     },
-    sniper: {
-      hp: 2, score: 140, r: 14,
-      color: '#9b6dff',
-      init(e, opts) {
-        e.vx = -60;
-        e.t = 0;
-        e.fireT = 1.4 + Math.random() * 0.8;
-        e.firing = false;
-      },
-      update(e, dt) {
-        e.t += dt;
-        e.x += e.vx * dt;
-        e.y += Math.sin(e.t * 0.6) * 12 * dt;
-        e.fireT -= dt;
-        if (e.fireT <= 0 && e.x < 720) {
-          // 3-shot spread
-          for (let k = -1; k <= 1; k++) {
-            const ang = Math.atan2(Player.y - e.y, Player.x - e.x) + k * 0.2;
-            const sp = 280;
-            Bullets.spawn({
-              x: e.x, y: e.y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
-              type: 'eshot', r: 5, color: '#c8a0ff', life: 4,
-            });
-          }
-          Audio.SFX.enemyShot();
-          e.fireT = 2.2;
-        }
-      },
-      draw(e, ctx) {
-        ctx.save();
-        ctx.translate(e.x, e.y);
-        ctx.fillStyle = '#7a4adb';
-        ctx.shadowColor = '#9b6dff'; ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(0, 0, 14, 0, Math.PI * 2);
-        ctx.fill();
-        // eye
-        ctx.fillStyle = '#ffe45a';
-        ctx.shadowBlur = 8;
-        const eyeX = Math.cos(performance.now() * 0.005) * 3;
-        const eyeY = Math.sin(performance.now() * 0.005) * 3;
-        ctx.beginPath();
-        ctx.arc(eyeX, eyeY, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    },
     turret: {
       hp: 4, score: 200, r: 14,
       color: '#8ad8ff',

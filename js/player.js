@@ -17,9 +17,6 @@ const Player = (() => {
     fireCooldown: 0,
     fireInterval: 0.11,
 
-    missileT: 0,
-    missileInterval: 0.7,   // auto-firing homing missiles (secondary weapon)
-
     chargeHeld: false,
     chargeTime: 0,
     chargeStartedShootingAt: 0,
@@ -49,7 +46,6 @@ const Player = (() => {
     p.x = 120; p.y = 225; p.vx = 0; p.vy = 0;
     p.alive = true; p.invul = 2;
     p.fireCooldown = 0; p.chargeHeld = false; p.chargeTime = 0;
-    p.missileT = 0;
     p.pod.mode = 'attached';
     p.pod.x = p.x + p.pod.attachOffset; p.pod.y = p.y;
     p.pod.fireCooldown = 0;
@@ -157,23 +153,7 @@ const Player = (() => {
     if (Input.wasPressed('bomb')) fireBomb();
     if (Input.wasPressed('pod')) togglePod();
 
-    // Auto-firing homing missiles (passive secondary weapon)
-    p.missileT -= dt;
-    if (p.missileT <= 0) { spawnMissiles(); p.missileT = p.missileInterval; }
-
     updatePod(dt);
-  }
-
-  function spawnMissiles() {
-    for (const wy of [-10, 10]) {
-      Bullets.spawn({
-        x: p.x - 4, y: p.y + wy,
-        vx: 360, vy: wy * 15,        // arc outward from the wings, then home
-        type: 'pmissile', r: 5, damage: 2, color: '#8dff6a',
-        friendly: true, homing: 7, life: 2.0,
-      });
-    }
-    Audio.SFX.missile();
   }
 
   function spawnPShot() {

@@ -31,7 +31,6 @@ const Level1 = (() => {
     { at: 5.5, spawn: vWave(280, 3, 'drone') },
     { at: 8.0, spawn: vWave(140, 4, 'drone') },
     { at: 8.0, spawn: vWave(310, 4, 'drone', { dx: -200 }) },
-    { at: 12.0, spawn: [{ type: 'sniper', x: 850, y: 120 }, { type: 'sniper', x: 850, y: 330 }] },
     { at: 15.0, spawn: vWave(225, 5, 'swooper') },
 
     // 0:20 - 0:50 Mid vagues
@@ -46,11 +45,6 @@ const Level1 = (() => {
       { type: 'kamikaze', x: 940, y: 380 },
     ]},
     { at: 35.0, spawn: vWave(225, 6, 'swooper') },
-    { at: 40.0, spawn: [
-      { type: 'sniper', x: 850, y: 110 },
-      { type: 'sniper', x: 850, y: 225 },
-      { type: 'sniper', x: 850, y: 340 },
-    ]},
     { at: 45.0, spawn: vWave(225, 5, 'drone') },
 
     // 0:50 - 1:30 corridor étroit
@@ -71,10 +65,6 @@ const Level1 = (() => {
     { at: 70.0, spawn: vWave(180, 4, 'drone') },
     { at: 70.0, spawn: vWave(280, 4, 'drone') },
     { at: 76.0, spawn: [{ type: 'powerup', x: 850, y: 225, kind: 'bomb' }] },
-    { at: 80.0, spawn: [
-      { type: 'sniper', x: 850, y: 120 },
-      { type: 'sniper', x: 880, y: 330 },
-    ]},
 
     // 1:30 - 1:55 Mid-boss
     { at: 88.0, phase: 'open' },
@@ -112,11 +102,6 @@ const Level1 = (() => {
     { at: 145.5, phase: 'approach' },
     { at: 148.0, spawn: vWave(180, 5, 'drone') },
     { at: 150.0, spawn: vWave(280, 5, 'drone') },
-    { at: 154.0, spawn: [
-      { type: 'sniper', x: 850, y: 130 },
-      { type: 'sniper', x: 850, y: 320 },
-      { type: 'sniper', x: 880, y: 225 },
-    ]},
     { at: 160.0, spawn: vWave(225, 6, 'swooper') },
     { at: 165.0, spawn: [{ type: 'powerup', x: 850, y: 225, kind: 'bomb' }] },
 
